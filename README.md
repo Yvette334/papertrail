@@ -101,7 +101,7 @@ papertrail/
 Links
 Project Board: https://github.com/users/Yvette334/projects/7
 
-Repository Issues:https://github.com/Yvette334/papertrail/issues
+Repository Issues:  https://github.com/Yvette334/papertrail/issues
 
 License
 MIT License
