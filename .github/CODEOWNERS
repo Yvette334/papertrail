@@ -1,0 +1,25 @@
+# Member 1(Yvette): repo setup, security, license
+/.github/                                  @Yvette334
+/LICENSE                                   @Yvette334
+
+# Member 2 (Bruno): questions API
+/src/app.js                                @Bruno-te
+/src/server.js                             @Bruno-te
+/src/routes/questions.routes.js            @Bruno-te
+/src/controllers/questions.controller.js   @Bruno-te
+/src/services/questions.service.js         @Bruno-te
+/src/data/                                 @Bruno-te
+/tests/questions.test.js                   @Bruno-te
+
+# Member 3 (Josiane): quiz and tests
+/src/routes/quiz.routes.js                 @Josiane705
+/src/controllers/quiz.controller.js        @Josiane705
+/src/services/quiz.service.js              @Josiane705
+/tests/quiz.service.test.js                @Josiane705
+/tests/api.test.js                         @Josiane705
+
+# Member 4 (Esther): docs and repo hygiene
+/README.md                                 @Esther447
+/.gitignore                                @Esther447
+/.env.example                              @Esther447
+/.github/ISSUE_TEMPLATE/                   @Esther447
