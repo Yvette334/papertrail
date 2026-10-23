@@ -1,69 +1,107 @@
-# [Project Name]
+# PaperTrail
 
-> [One-line tagline describing your project]
+> Empowering African students with accessible, curriculum-aligned digital quiz practice.
 
 ## African Context
 
-[Explain what problem this solves and why it matters in an African context]
+In many educational settings across Africa, students face limited access to practice exams and instant feedback tools outside of crowded classrooms. PaperTrail bridges this gap by providing an offline-friendly, lightweight API and quiz platform targeted at regional subjects (Mathematics, Biology, Geography), helping students build confidence and test mastery effectively.
 
 ## Team Members
 
-- [Name] - [Role] - [Student ID]
-- [Name] - [Role] - [Student ID]
-- [Name] - [Role] - [Student ID]
+- Yvette (Member 1) - Lead & Infrastructure
+- Bruno (Member 2) - Backend & Questions API
+- Josiane (Member 3) - Quiz Engine & Testing
+- Esther447 / Josiane705 (Member 4) - Docs, Project Board & Hygiene
 
 ## Project Overview
 
-[2-3 paragraph description of what this application does]
+PaperTrail is a Node.js and Express backend application designed with a clean multi-layered architecture (Routes → Controllers → Services → Data). It serves curriculum questions, generates randomized quizzes, and scores student submissions securely without exposing correct answers prematurely.
+
+The system is built with lightweight JSON storage to maintain low resource usage, making it fast and simple to deploy in low-bandwidth environments.
 
 ### Target Users
-[Who will use this application?]
+- **Students:** Practice subject questions and receive instant score breakdowns.
+- **Teachers & Educators:** Access a structured repository of curriculum questions.
 
 ### Core Features
-- Feature 1: [Description]
-- Feature 2: [Description]
-- Feature 3: [Description]
+- **Question Filtering:** Search questions by subject, year, or topic.
+- **Dynamic Quizzes:** Generate 5-question randomized quizzes without exposing answers.
+- **Automated Scoring:** Submit user selections for instant score calculations and result breakdowns.
 
 ## Technology Stack
 
-- **Backend**: [e.g., Python/Django, Node.js/Express]
-- **Frontend**: [e.g., React, Vue, or vanilla JavaScript]
-- **Database**: [e.g., PostgreSQL, MongoDB]
-- **Other**: [Any other key technologies]
+- **Backend**: Node.js, Express.js
+- **Frontend**: N/A (REST API Service)
+- **Database**: JSON File Repository
+- **Other**: Jest, Supertest (Testing)
 
 ## Getting Started
 
 ### Prerequisites
-- [e.g., Python 3.9+, Node.js 16+]
-- [Any other requirements]
+- Node.js (v18+ recommended)
+- npm
 
 ### Installation
 
 1. Clone the repository
 ```bash
-   git clone [your-repo-url]
-   cd [repo-name]
-```
+   git clone [https://github.com/Yvette334/papertrail.git](https://github.com/Yvette334/papertrail.git)
+   cd papertrail
+Install dependencies
 
-2. [Step-by-step setup instructions]
+Bash
+   npm install
+Configure environment variables
 
-3. Run the application
-```bash
-   [command to run]
-```
+Bash
+   cp .env.example .env
+Usage
+Start the application
 
-### Usage
+Bash
+   npm start
+Run the test suite
 
-[How to use the application - include examples if applicable]
+Bash
+   npm test
+API Examples:
 
-## Project Structure
-[Show your directory structure]
+Filter Questions: curl "http://localhost:3000/api/questions?subject=Biology"
 
-## Links
+Start Quiz: curl "http://localhost:3000/api/quiz?subject=Geography"
 
-- [Project Board](link-to-github-projects)
-- [Documentation](if applicable)
+Submit Answers:
 
-## License
+Bash
+curl -X POST http://localhost:3000/api/quiz/submit \
+  -H "Content-Type: application/json" \
+  -d '{"answers":[{"id":12,"answer":0},{"id":13,"answer":2}]}'
+Project Structure
+Plaintext
+papertrail/
+├── src/
+│   ├── app.js
+│   ├── server.js
+│   ├── routes/
+│   │   ├── questions.routes.js
+│   │   └── quiz.routes.js
+│   ├── controllers/
+│   │   ├── questions.controller.js
+│   │   └── quiz.controller.js
+│   ├── services/
+│   │   ├── questions.service.js
+│   │   └── quiz.service.js
+│   └── data/questions.json
+├── tests/
+│   ├── quiz.service.test.js
+│   └── api.test.js
+├── .env.example
+├── .gitignore
+└── package.json
+Links
+Project Board: https://github.com/users/Yvette334/projects/7
 
-[e.g., MIT License]
+Repository Issues:https://github.com/Yvette334/papertrail/issues
+
+License
+MIT License
