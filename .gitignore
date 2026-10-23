@@ -1,16 +1,12 @@
-# Dependencies
 node_modules/
-
-# Environment variables and secrets
 .env
 .env.*
 !.env.example
-
-# Logs
-*.log
-npm-debug.log*
-
-# OS and IDE files
-.DS_Store
-.idea/
 .vscode/
+.idea/
+*.log
+coverage/
+dist/
+build/
+.DS_Store
+npm-debug.log*
