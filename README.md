@@ -4,14 +4,14 @@
 
 ## African Context
 
-Students in Africa prepare for national exams using scattered past papers, often PDFs shared over. They cannot check their answers, and many cannot afford extra textbooks or tutors. PaperTrail puts past-paper questions and answers in one place, so any student with a phone or laptop can practice and see their score instantly.
+Students in Africa prepare for national exams using scattered past papers, often PDFs shared over WhatsApp. They cannot check their answers, and many cannot afford extra textbooks or tutors. PaperTrail puts past-paper questions and answers in one place, so any student with a phone or laptop can practice and see their score instantly.
 
 ## Team Members
 
-- Yvette Muhoracyeye - repository setup, branch protection ruleset, LICENSE, CODEOWNERS, PR reviews - [Student ID]
-- Ishimwe Bruno - Backend: Express skeleton, questions API, questions tests - [Student ID]
-- Josiane Mukeshimana - Quiz logic: quiz endpoints, scoring service, quiz tests - [Student ID]
-- Esther Mushimiyimana - Planning and docs: project board, issues, labels, milestone, README - [Student ID]
+- Yvette Muhoracyeye - Team Lead: repository setup, branch protection ruleset, LICENSE, CODEOWNERS, PR reviews - y.muhoracte@alustudent.com
+- Ishimwe Bruno - Backend: Express skeleton, questions API, questions tests - i.bruno@alustudent.com
+- Josiane Mukeshimana - Quiz logic: quiz endpoints, scoring service, quiz tests - j.mukeshima@alustudent.com
+- Esther Mushimiyimane - Planning and docs: project board, issues, labels, milestone, README - e.mushimiyi@alustudent.com
 
 ## Project Overview
 
@@ -49,6 +49,7 @@ Login, attempt history and teacher question management are planned and tracked o
 1. Clone the repository
 ```bash
 git clone https://github.com/Yvette334/papertrail.git
+cd papertrail
 ```
 
 2. Install dependencies and create your environment file
@@ -102,6 +103,9 @@ papertrail/
 │   ├── services/
 │   └── data/questions.json
 ├── tests/
+│   ├── api.test.js
+│   ├── questions.test.js
+│   └── quiz.service.test.js
 ├── .env.example
 ├── .gitignore
 ├── LICENSE
@@ -129,7 +133,7 @@ papertrail/
 
 ## Links
 
-- Project Board: https://github.com/users/Yvette334/projects/7
+- [Project Board](https://github.com/users/Yvette334/projects/7)
 
 ## License
 
