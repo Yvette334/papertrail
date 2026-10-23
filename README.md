@@ -8,10 +8,10 @@ Students in Africa prepare for national exams using scattered past papers, often
 
 ## Team Members
 
-- Yvette Muhoracyeye - repository setup, branch protection ruleset, LICENSE, CODEOWNERS, PR reviews - [Student ID]
-- Ishimwe Bruno - Backend: Express skeleton, questions API, questions tests - [Student ID]
-- Josiane Mukeshimana - Quiz logic: quiz endpoints, scoring service, quiz tests - [Student ID]
-- Esther Mushimiyimana - Planning and docs: project board, issues, labels, milestone, README - [Student ID]
+- Yvette Muhoracyeye - repository setup, branch protection ruleset, LICENSE, CODEOWNERS, PR reviews 
+- Ishimwe Bruno - Backend: Express skeleton, questions API, questions tests
+- Josiane Mukeshimana - Quiz logic: quiz endpoints, scoring service, quiz tests
+- Esther Mushimiyimana - Planning and docs: project board, issues, labels, milestone, README
 
 ## Project Overview
 
@@ -49,6 +49,7 @@ Login, attempt history and teacher question management are planned and tracked o
 1. Clone the repository
 ```bash
 git clone https://github.com/Yvette334/papertrail.git
+cd papertrail
 ```
 
 2. Install dependencies and create your environment file
