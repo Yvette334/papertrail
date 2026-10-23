@@ -1,0 +1,17 @@
+[
+  {"id":1,"subject":"Mathematics","year":2022,"topic":"Arithmetic","text":"What is 12 x 8?","options":["86","96","108","98"],"answer":1},
+  {"id":2,"subject":"Mathematics","year":2022,"topic":"Algebra","text":"Solve: 2x + 6 = 14","options":["2","3","4","5"],"answer":2},
+  {"id":3,"subject":"Mathematics","year":2021,"topic":"Geometry","text":"What is the area of a rectangle 8 cm by 5 cm?","options":["13 cm²","26 cm²","40 cm²","45 cm²"],"answer":2},
+  {"id":4,"subject":"Mathematics","year":2023,"topic":"Percentages","text":"What is 20% of 150?","options":["20","30","35","40"],"answer":1},
+  {"id":5,"subject":"Mathematics","year":2023,"topic":"Geometry","text":"What is the sum of the angles in a triangle?","options":["90°","180°","270°","360°"],"answer":1},
+  {"id":6,"subject":"Biology","year":2022,"topic":"Cell Biology","text":"Which organelle produces energy in a cell?","options":["Nucleus","Mitochondria","Ribosome","Vacuole"],"answer":1},
+  {"id":7,"subject":"Biology","year":2021,"topic":"Photosynthesis","text":"Which gas do plants absorb for photosynthesis?","options":["Oxygen","Nitrogen","Carbon dioxide","Hydrogen"],"answer":2},
+  {"id":8,"subject":"Biology","year":2023,"topic":"Human Biology","text":"Which blood cells carry oxygen?","options":["White blood cells","Red blood cells","Platelets","Plasma"],"answer":1},
+  {"id":9,"subject":"Biology","year":2022,"topic":"Diseases","text":"Which insect transmits malaria?","options":["Housefly","Tsetse fly","Anopheles mosquito","Tick"],"answer":2},
+  {"id":10,"subject":"Biology","year":2023,"topic":"Genetics","text":"What is the basic unit of heredity?","options":["Chromosome","Gene","Cell","Tissue"],"answer":1},
+  {"id":11,"subject":"Geography","year":2021,"topic":"Physical Geography","text":"Which is the largest lake in Africa?","options":["Lake Tanganyika","Lake Victoria","Lake Kivu","Lake Malawi"],"answer":1},
+  {"id":12,"subject":"Geography","year":2022,"topic":"Political Geography","text":"What is the capital city of Rwanda?","options":["Kigali","Kampala","Nairobi","Dodoma"],"answer":0},
+  {"id":13,"subject":"Geography","year":2023,"topic":"Physical Geography","text":"Which is the longest river in Africa?","options":["Congo","Niger","Nile","Zambezi"],"answer":2},
+  {"id":14,"subject":"Geography","year":2021,"topic":"Physical Geography","text":"In which country is Mount Kilimanjaro?","options":["Kenya","Tanzania","Uganda","Rwanda"],"answer":1},
+  {"id":15,"subject":"Geography","year":2023,"topic":"Map Skills","text":"Which line of latitude is 0°?","options":["Prime Meridian","Equator","Tropic of Cancer","Tropic of Capricorn"],"answer":1}
+]
