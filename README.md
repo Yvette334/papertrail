@@ -19,7 +19,7 @@ PaperTrail is a REST API for exam practice. A student browses past-paper questio
 
 The code is split into routes, controllers, services and data. All data access is isolated in `questions.service.js`, so the JSON file can later be replaced by a database, and the questions and quiz parts could become separate microservices.
 
-Login, attempt history and teacher question management are planned and tracked on the project board. Docker, a CI pipeline and cloud deployment are planned for later formatives.
+Login, attempt history and teacher question management are planned and tracked on the project board. Docker Compose and a CI pipeline are included in the current formative. Cloud deployment is planned for a later formative.
 
 ### Target Users
 - Secondary and university students preparing for exams
@@ -35,7 +35,7 @@ Login, attempt history and teacher question management are planned and tracked o
 - **Backend**: Node.js, Express
 - **Frontend**: None for now (REST API)
 - **Database**: JSON file (`src/data/questions.json`); a real database is planned
-- **Other**: Jest and Supertest for testing; Git, GitHub, GitHub Projects; Docker, GitHub Actions and Terraform planned
+- **Other**: Jest and Supertest for testing; Git, GitHub, GitHub Projects, Docker, Docker Compose and GitHub Actions; Terraform is planned for a later formative.
 
 ## Getting Started
 
@@ -68,6 +68,69 @@ The API runs at http://localhost:3000
 ```bash
 npm test
 ```
+
+### Running with Docker Compose
+
+Docker Compose runs the PaperTrail API in a container using the project's `Dockerfile`.
+
+#### Prerequisites
+
+- Docker
+- Docker Compose
+
+#### Start the application
+
+Make sure you have a `.env` file in the project root. You can create one from the example:
+
+```bash
+cp .env.example .env
+```
+
+Build and start the application:
+
+```bash
+docker compose up --build
+```
+
+The API will be available at:
+
+```text
+http://localhost:3000
+```
+
+#### Check the health status
+
+The application includes a health check for the `/health` endpoint.
+
+You can test it with:
+
+```bash
+curl http://localhost:3000/health
+```
+
+A successful response looks like:
+
+```json
+{"status":"ok","service":"papertrail"}
+```
+
+You can also check the container status with:
+
+```bash
+docker compose ps
+```
+
+The container should show a `healthy` status.
+
+#### Stop the application
+
+To stop and remove the container and network:
+
+```bash
+docker compose down
+```
+
+The Compose configuration loads environment variables from `.env`, maps port `3000` on the host to port `3000` in the container, uses a restart policy, and monitors the application's health through `/health`.
 
 ### Usage
 
