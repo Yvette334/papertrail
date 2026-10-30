@@ -8,7 +8,7 @@ Students in Africa prepare for national exams using scattered past papers, often
 
 ## Team Members
 
-- Yvette Muhoracyeye - Team Lead: repository setup, branch protection ruleset, LICENSE, CODEOWNERS, PR reviews - y.muhoracte@alustudent.com
+- Yvette Muhoracyeye - Team Lead: repository setup, branch protection ruleset, LICENSE, CODEOWNERS, PR reviews - y.muhoracye@alustudent.com
 - Ishimwe Bruno - Backend: Express skeleton, questions API, questions tests - i.bruno@alustudent.com
 - Josiane Mukeshimana - Quiz logic: quiz endpoints, scoring service, quiz tests - j.mukeshima@alustudent.com
 - Esther Mushimiyimane - Planning and docs: project board, issues, labels, milestone, README - e.mushimiyi@alustudent.com
@@ -19,7 +19,7 @@ PaperTrail is a REST API for exam practice. A student browses past-paper questio
 
 The code is split into routes, controllers, services and data. All data access is isolated in `questions.service.js`, so the JSON file can later be replaced by a database, and the questions and quiz parts could become separate microservices.
 
-Login, attempt history and teacher question management are planned and tracked on the project board. Docker Compose and a CI pipeline are included in the current formative. Cloud deployment is planned for a later formative.
+Login, attempt history and teacher question management are planned and tracked on the project board. Docker Compose and a CI pipeline are included in Formative 2. Cloud deployment is planned for a later formative.
 
 ### Target Users
 - Secondary and university students preparing for exams
@@ -35,14 +35,15 @@ Login, attempt history and teacher question management are planned and tracked o
 - **Backend**: Node.js, Express
 - **Frontend**: None for now (REST API)
 - **Database**: JSON file (`src/data/questions.json`); a real database is planned
-- **Other**: Jest and Supertest for testing; Git, GitHub, GitHub Projects, Docker, Docker Compose and GitHub Actions; Terraform is planned for a later formative.
+- **Other**: Jest and Supertest for testing; ESLint for linting; Git, GitHub, GitHub Projects; Docker and Docker Compose; GitHub Actions for CI; Terraform is planned for a later formative.
 
 ## Getting Started
 
 ### Prerequisites
-- Node.js 18+
+- Node.js 20.19 or newer
 - npm
 - Git
+- Docker Desktop
 
 ### Installation
 
@@ -80,7 +81,7 @@ Docker Compose runs the PaperTrail API in a container using the project's `Docke
 
 #### Start the application
 
-Make sure you have a `.env` file in the project root. You can create one from the example:
+A `.env` file is optional: Compose starts without one. To customise values, create one from the example:
 
 ```bash
 cp .env.example .env
@@ -130,7 +131,27 @@ To stop and remove the container and network:
 docker compose down
 ```
 
-The Compose configuration loads environment variables from `.env`, maps port `3000` on the host to port `3000` in the container, uses a restart policy, and monitors the application's health through `/health`.
+The Compose configuration optionally loads variables from `.env`, maps port `3000` on the host to port `3000` in the container, attaches the service to a named network (`papertrail-net`), uses a restart policy, and monitors the application's health through `/health`.
+
+### Continuous Integration
+
+The workflow in `.github/workflows/ci.yml` runs on every push to a branch other than `main` and on every pull request into `main`. It runs these steps in order, and a failure in any step fails the run:
+
+1. Check out the code and set up Node.js 20 (with npm caching)
+2. `npm ci` to install the exact locked dependencies
+3. `npm run lint` (ESLint)
+4. `npm test` (Jest)
+5. `docker build` to build the image
+6. A smoke test that starts the container and calls `/health`
+
+The **Lint, test and build** check is required by the `main` ruleset, so a pull request cannot be merged until it passes and has one approval.
+
+Run the same checks locally:
+```bash
+npm run lint
+npm test
+docker compose up --build
+```
 
 ### Usage
 
@@ -157,6 +178,8 @@ On Windows PowerShell use `curl.exe`, or open the GET links in a browser. In `an
 papertrail/
 ├── .github/
 │   ├── ISSUE_TEMPLATE/
+│   ├── workflows/
+│   │   └── ci.yml
 │   └── CODEOWNERS
 ├── src/
 │   ├── app.js
@@ -169,8 +192,12 @@ papertrail/
 │   ├── api.test.js
 │   ├── questions.test.js
 │   └── quiz.service.test.js
+├── .dockerignore
 ├── .env.example
 ├── .gitignore
+├── docker-compose.yml
+├── Dockerfile
+├── eslint.config.js
 ├── LICENSE
 └── package.json
 ```
@@ -188,7 +215,7 @@ papertrail/
 | Require a pull request before merging | No one can push straight to `main` by accident |
 | Require 1 approval | A second person reviews every change |
 | Dismiss stale approvals on new commits | New code must be reviewed again |
-| Require status checks to pass | Automated tests will block broken code (checks added in Formative 2) |
+| Require status checks to pass | The **Lint, test and build** CI check (lint, tests, Docker build) must be green before merging |
 | Require branches to be up to date | Prevents merging changes that conflict with newer work |
 | Require conversation resolution | Review comments must be addressed before merging |
 | Empty bypass list | The rules apply to administrators too |
