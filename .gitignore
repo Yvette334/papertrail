@@ -43,23 +43,16 @@ out/
 Thumbs.db
 Desktop.ini
 
-# Terraform 
+# Terraform
+.terraform/
 *.tfstate
 *.tfstate.*
-.terraform/
-.terraform.lock.hcl
 crash.log
-terraform
 *.tfvars
 *.tfvars.json
 !terraform.tfvars.example
 tfplan
-*.auto.tfvars
 
 # Ansible
 *.retry
-
-# Database password. Each person generates their own; it stays on their laptop.
 ansible/secrets.yml
-# Generated from terraform output on each laptop.
-ansible/inventory.ini

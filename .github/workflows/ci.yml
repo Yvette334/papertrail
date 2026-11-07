@@ -48,3 +48,39 @@ jobs:
           sleep 5
           curl --fail http://localhost:3000/health
           docker rm -f papertrail-ci
+
+  dependency-scan:
+    name: Dependency scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+  image-scan:
+    name: Image scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -t papertrail:scan .
+
+      - name: Scan image using Trivy
+        uses: aquasecurity/trivy-action@0.35.0
+        with:
+          image-ref: papertrail:scan
+          version: v0.69.3
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+          ignore-unfixed: true
