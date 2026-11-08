@@ -1,7 +1,7 @@
 # Stage 1:install production dependencies
 # Pinned Node.js version on Alpine Linux: small image, fewer vulnerabilities,
 # and the same version on every machine
-FROM node:20.18.0-alpine AS deps
+FROM node:24.22.2-alpine3.23 AS deps
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -17,13 +17,20 @@ RUN npm ci --omit=dev  && npm cache clean --force
 
 # Stage 2: final runtime image
 # Start again from a clean image, so build leftovers are not shipped
-FROM node:20.18.0-alpine
+FROM node:24.22.2-alpine3.23
 
 # Run Express in production mode and set the default port
 ENV NODE_ENV=production
 ENV PORT=3000
 
 WORKDIR /app
+
+# Install available security updates for OS packages (openssl, musl, zlib)
+RUN apk upgrade --no-cache
+
+# The API starts with "node", so npm is not needed at runtime.
+# Removing it also removes the libraries bundled inside npm
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 
 # Take ONLY the installed production modules from stage 1,
 # owned by the unprivileged "node" user
