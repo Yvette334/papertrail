@@ -24,7 +24,7 @@
     - name: Run the PaperTrail container
       community.docker.docker_container:
         name: papertrail
-        image: josianekk/papertrail:v1
+        image: josianekk/papertrail:v2
         state: started
         restart_policy: unless-stopped
         published_ports:
