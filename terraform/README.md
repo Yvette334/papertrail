@@ -9,12 +9,12 @@ Provisions the AWS infrastructure for the PaperTrail backend: a VPC, a public su
 | VPC (`10.0.0.0/16`) | Isolated virtual network |
 | Internet gateway, public subnet, route table + association | Gives the subnet a route to the internet |
 | Default security group (no rules) | Locks down the VPC's default group |
-| Application security group | SSH (22) from one admin IP only; app port (3000) open to the internet; all outbound allowed |
+| Application security group | SSH (22) from one admin IP only; app port (3000) open to the internet; outbound limited to HTTPS and HTTP for images and package downloads |
 | Key pair | Created from your SSH **public** key so Ansible/you can log in |
 | EC2 instance (Ubuntu 24.04 LTS, `t3.micro`) | Application server: IMDSv2 required, encrypted gp3 root volume |
 | Elastic IP | Stable public IP for the server |
 
-Resources: 10 in total. The Ubuntu image and availability zone are looked up with data sources, not hardcoded.
+Resources: 10 in total. The Ubuntu image is looked up with data sources, not hardcoded.
 
 ## Prerequisites
 
