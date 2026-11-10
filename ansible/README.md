@@ -1,6 +1,6 @@
 # Ansible: configure the PaperTrail server
 
-This playbook configures the server created by Terraform. It installs Docker, runs the PaperTrail container from Docker Hub (`josianekk/papertrail:v1`), sets up a firewall and hardens SSH.
+This playbook configures the server created by Terraform. It installs Docker, runs the PaperTrail container from Docker Hub (`josianekk/papertrail:v2`), sets up a firewall and hardens SSH.
 
 ## What the playbook does
 
@@ -27,7 +27,7 @@ This playbook configures the server created by Terraform. It installs Docker, ru
   ```
 - The server from the Terraform step, with its public IP
 - The SSH private key (`.pem`) for that server, saved in `~/.ssh/` with `chmod 400`
-- The image `josianekk/papertrail:v1` public on Docker Hub
+- The image `josianekk/papertrail:v2` public on Docker Hub
 - The server's security group must allow ports 22 and 3000
 
 Never commit the `.pem` key. It is blocked by `.gitignore`.
