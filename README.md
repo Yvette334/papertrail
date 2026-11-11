@@ -35,7 +35,7 @@ Login, attempt history and teacher question management are planned and tracked o
 - **Backend**: Node.js, Express
 - **Frontend**: None for now (REST API)
 - **Database**: JSON file (`src/data/questions.json`); a real database is planned
-- **Other**: Jest and Supertest for testing; ESLint for linting; Git, GitHub, GitHub Projects; Docker and Docker Compose; GitHub Actions for CI; Terraform is planned for a later formative.
+- **Other**: Jest and Supertest for testing; ESLint for linting; Git, GitHub, GitHub Projects; Docker and Docker Compose; GitHub Actions for CI; Terraform and Ansible for infrastructure provisioning and configuration management.
 
 ## Getting Started
 
@@ -201,6 +201,31 @@ papertrail/
 ├── LICENSE
 └── package.json
 ```
+
+## Infrastructure
+
+Terraform provisions the cloud infrastructure. The infrastructure code lives under `terraform/` and includes `main.tf`, `variables.tf`, `outputs.tf`, and `terraform.tfvars.example`. The actual `.tfvars` file must not be committed because it may contain sensitive values such as credentials or IP addresses; `terraform.tfvars.example` lists the required variable names with safe placeholder values instead.
+
+After Terraform provisions the infrastructure, Ansible configures the server. The application image is built and published to Docker Hub, and the container is run on the provisioned server.
+
+Deployment is therefore separated into three concerns:
+
+1. Infrastructure provisioning — Terraform
+2. Server configuration management — Ansible
+3. Application containerisation — Docker and Docker Hub
+
+## Security
+
+PaperTrail runs the following automated security checks as part of the Formative 3 CI workflow:
+
+- **npm audit** — scans Node.js dependencies for known vulnerabilities.
+- **Trivy** — scans the Docker container image for known vulnerabilities and misconfigurations.
+- **Checkov** — scans the Terraform infrastructure code for security and configuration problems.
+- **GitHub Actions** — the CI workflow will run the above checks on every pull request into `main` once the scanning steps have been added.
+- **Pull request review** — every change to `main` requires at least one approval from another team member.
+- **Protected `main` branch** — force pushes and direct commits are blocked; the full ruleset is described in the Branch protection table below.
+
+Scan results will be recorded in [SECURITY.md](SECURITY.md) once the team's CI runs have produced output. No scan results are claimed here until they are available.
 
 ## Security and Collaboration Practices
 

@@ -1,51 +1,95 @@
-# Security
+# Security Policy
 
-This document describes how security is handled in PaperTrail: how to report a problem, which automated scans run on every pull request, and what those scans found and how we dealt with it.
+## Overview
 
-## Reporting a vulnerability
+PaperTrail takes application, dependency, container and infrastructure security seriously. Security checks are included in the development and CI workflow so that problems can be identified before changes are merged into `main`.
 
-Please do not open a public issue for security problems. Report them privately to the team lead at `<team-lead-email>`, or through GitHub's "Report a vulnerability" option on the repository's Security tab if it is enabled. Include what you found, how to reproduce it, and the impact. We aim to acknowledge reports within a few days.
+## Supported Version
 
-## Security scanning in CI
+The current `main` branch is the supported development version.
 
-The workflow in `.github/workflows/ci.yml` runs on every pull request to `main` and on pushes to `main`. A failing scan blocks the merge.
+## Security Checks
 
-| Scan | Tool | What it checks | Job name |
-|------|------|----------------|----------|
-| Infrastructure as Code scan | Checkov | Terraform configuration in `terraform/` for insecure settings | `iac-scan` |
-| Dependency scan | `<tool, e.g. npm audit>` | Known vulnerabilities in Node.js dependencies | `<job name>` |
-| Container image scan | `<tool, e.g. Trivy>` | Known vulnerabilities in the Docker image | `<job name>` |
+PaperTrail uses several automated checks as part of Formative 3:
 
-> Rows marked with `<...>` are to be completed by the teammate who owns that scan. Delete rows for scans the team does not add (the brief requires at least two).
+- **npm audit** checks Node.js dependencies for known vulnerabilities.
+- **Trivy** scans the Docker container image for known vulnerabilities and misconfigurations.
+- **Checkov** scans Terraform infrastructure-as-code for security and configuration problems.
+- **GitHub Actions** runs the security checks on every pull request into `main`.
+- Pull requests require the configured CI checks to pass before merging.
 
-## Findings and how they were addressed
+## Security Findings
 
-### IaC scan (Checkov) on `terraform/`
+The following table records findings identified by the project's security scans.
 
-First run: 18 checks passed and 5 failed. After the changes below: 19 passed, 0 failed, 3 skipped with documented reasons. (The total went from 23 to 22 checks because removing the availability-zone data source removed one check.)
+### npm audit
+
+| Scope | Findings | Severity | Affected Component | Status | Remediation |
+|---|---|---|---|---|---|
+| Production only (`--omit=dev --audit-level=high`) | 0 vulnerabilities | — | Runtime dependencies | ✅ Clean | No action required |
+| All dependencies | 23 findings (3 low, 20 moderate) | Low / Moderate | Dev tools only: Jest, ESLint, nodemon (deepmerge, glob, minimatch) | Accepted risk | Dev dependencies are never shipped in the container image. Running `npm audit fix --force` would downgrade Jest and ESLint. Risk accepted. |
+
+### Trivy (container image scan)
+
+| Image | Findings | Severity | Affected Component | Status | Remediation |
+|---|---|---|---|---|---|
+| Node 20.18.0 on Alpine 3.20.3 (before) | 45 findings (3 critical, 42 high) | Critical / High | OS packages: OpenSSL libcrypto3, libssl3, musl, zlib. npm bundled libs: tar, minimatch, brace-expansion, glob, cross-spawn, ip-address, pacote, sigstore | Fixed | Upgraded base image and removed npm from runtime image (see below) |
+| Node 24.2.2 on Alpine 3.23 (after) | 0 findings | — | Docker image | ✅ Clean | Base image upgraded to Node 24.2.2 on Alpine 3.23, `apk upgrade` applied, npm removed from the runtime image (app starts with `node` directly) |
+
+None of the findings were in application code. Verified in GitHub Actions: the red run on commit `59b5641` shows the original 45 findings; run #23 shows 0 findings after the fix.
+
+### Checkov (IaC scan on `terraform/`)
+
+First run: 18 checks passed, 5 failed. After fixes: 19 passed, 0 failed, 3 skipped with documented reasons.
 
 | Check | Finding | Decision | Details |
-|-------|---------|----------|---------|
+|---|---|---|---|
 | CKV_AWS_382 | Security group allowed all outbound traffic to the internet | **Fixed** | Egress is now limited to TCP 443 (HTTPS) and TCP 80 (HTTP) for package and image downloads. |
-| CKV_AWS_394 | Availability-zone data source was not pinned | **Fixed** | The data source and the explicit zone were removed from the subnet, so AWS chooses the zone. This removes a moving part. |
-| CKV_AWS_126 | Detailed EC2 monitoring not enabled | **Accepted** | Detailed monitoring costs extra per instance and basic monitoring is enough for this project. Skipped inline in `main.tf` with the reason. |
-| CKV2_AWS_11 | VPC flow logs not enabled | **Accepted** | Flow logs need an IAM role and CloudWatch resources, beyond the least-privilege deploy user used here, and add cost. Recommended for production. Skipped inline with the reason. |
-| CKV2_AWS_41 | No IAM role attached to the EC2 instance | **Accepted** | The application does not call AWS APIs, so a role would only add credentials to the server. No role is the least-privilege choice. Skipped inline with the reason. |
+| CKV_AWS_394 | Availability-zone data source was not pinned | **Fixed** | The data source and the explicit zone were removed from the subnet, so AWS chooses the zone. |
+| CKV_AWS_126 | Detailed EC2 monitoring not enabled | **Accepted** | Detailed monitoring costs extra per instance; basic monitoring is sufficient for this project. Skipped inline in `main.tf` with the reason. |
+| CKV2_AWS_11 | VPC flow logs not enabled | **Accepted** | Flow logs require an IAM role and CloudWatch resources beyond the least-privilege deploy user, and add cost. Recommended for production. Skipped inline with the reason. |
+| CKV2_AWS_41 | No IAM role attached to the EC2 instance | **Accepted** | The application does not call AWS APIs, so attaching a role would only add credentials to the server. No role is the least-privilege choice. Skipped inline with the reason. |
 
-Accepted risks are recorded next to the code as `#checkov:skip=<check>:<reason>` comments in `terraform/main.tf`, so the reason is visible in review.
+Accepted risks are recorded as `#checkov:skip=<check>:<reason>` comments in `terraform/main.tf`, so the rationale is visible during code review.
 
-### Dependency scan
+## Handling Security Issues
 
-`<Teammate: list the findings (package, severity, fix) and what was done: upgraded, replaced, or accepted with a reason.>`
+Security findings are reviewed by the team and tracked through GitHub Issues or pull requests where appropriate.
 
-### Container image scan
+For each finding, the team records:
 
-`<Teammate: list the findings and how they were addressed, or remove this section if the scan was not added.>`
+1. The security tool that detected it.
+2. The affected component.
+3. The severity.
+4. The remediation required.
+5. The current status.
 
-## Other security measures in the repository
+Critical or high-severity findings should be reviewed and addressed as a priority before the affected change is merged or deployed.
 
-- `main` is protected: changes need a pull request, an approval, resolved conversations, and passing status checks.
-- Secrets are never committed. `.env`, `terraform.tfvars`, Terraform state files and plan files are git-ignored, and `.env.example` / `terraform.tfvars.example` hold placeholders only.
-- Terraform: SSH (port 22) is only open to a single admin IP (the variable rejects `0.0.0.0/0`), the instance requires IMDSv2, the root volume is encrypted, and the VPC's default security group has no rules.
-- Docker: the container runs as the non-root `node` user, installs production dependencies only, and does not copy `.env` into the image.
-- The API never returns the correct answer for a question before an attempt is submitted.
+## Secrets and Sensitive Configuration
+
+Secrets must not be committed to the repository.
+
+Environment-specific values should be stored in local environment files or the appropriate deployment secret store. The repository may contain `.env.example`, but it must contain variable names or safe example values rather than real credentials.
+
+The `.gitignore` file excludes sensitive files such as `.env`.
+
+## Pull Requests and Code Review
+
+Changes to `main` are made through pull requests. Required CI checks and code review provide an additional security control before changes are merged.
+
+Security-related changes should be reviewed by another team member and should not bypass the repository's required checks.
+
+## Reporting a Security Issue
+
+If a security issue is discovered, report it privately to the project team rather than publicly disclosing sensitive details before the issue has been reviewed.
+
+Include:
+
+- a description of the issue
+- affected file, component or endpoint
+- steps needed to reproduce the issue, where appropriate
+- potential impact
+- any suggested remediation
+
+The team will review the report and track the required remediation through the repository's issue and pull-request workflow.
