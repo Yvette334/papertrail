@@ -38,11 +38,19 @@ The following table records findings identified by the project's security scans.
 
 None of the findings were in application code. Verified in GitHub Actions: the red run on commit `59b5641` shows the original 45 findings; run #23 shows 0 findings after the fix.
 
-### Checkov (IaC scan)
+### Checkov (IaC scan on `terraform/`)
 
-| Tool | Finding | Severity | Affected Component | Status | Remediation |
-|---|---|---|---|---|---|
-| Checkov | To be completed from CI results | — | Terraform (`terraform/`) | Pending | Awaiting Bruno's CI scan output |
+First run: 18 checks passed, 5 failed. After fixes: 19 passed, 0 failed, 3 skipped with documented reasons.
+
+| Check | Finding | Decision | Details |
+|---|---|---|---|
+| CKV_AWS_382 | Security group allowed all outbound traffic to the internet | **Fixed** | Egress is now limited to TCP 443 (HTTPS) and TCP 80 (HTTP) for package and image downloads. |
+| CKV_AWS_394 | Availability-zone data source was not pinned | **Fixed** | The data source and the explicit zone were removed from the subnet, so AWS chooses the zone. |
+| CKV_AWS_126 | Detailed EC2 monitoring not enabled | **Accepted** | Detailed monitoring costs extra per instance; basic monitoring is sufficient for this project. Skipped inline in `main.tf` with the reason. |
+| CKV2_AWS_11 | VPC flow logs not enabled | **Accepted** | Flow logs require an IAM role and CloudWatch resources beyond the least-privilege deploy user, and add cost. Recommended for production. Skipped inline with the reason. |
+| CKV2_AWS_41 | No IAM role attached to the EC2 instance | **Accepted** | The application does not call AWS APIs, so attaching a role would only add credentials to the server. No role is the least-privilege choice. Skipped inline with the reason. |
+
+Accepted risks are recorded as `#checkov:skip=<check>:<reason>` comments in `terraform/main.tf`, so the rationale is visible during code review.
 
 ## Handling Security Issues
 
