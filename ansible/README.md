@@ -26,11 +26,11 @@ This playbook configures the server created by Terraform. It installs Docker, ru
   ansible-galaxy collection install community.docker community.general
   ```
 - The server from the Terraform step, with its public IP
-- The SSH private key (`.pem`) for that server, saved in `~/.ssh/` with `chmod 400`
+- The SSH private key for that server (for example `~/.ssh/papertrail-key`), with `chmod 400`. Its public key must be in the server's `~/.ssh/authorized_keys`
 - The image `josianekk/papertrail:v2` public on Docker Hub
-- The server's security group must allow ports 22 and 3000
+- The server's security group must allow port 3000, and SSH (port 22) from your own IP address (the `allowed_ssh_cidr` value in `terraform.tfvars`)
 
-Never commit the `.pem` key. It is blocked by `.gitignore`.
+Never commit a private key. Key files are blocked by `.gitignore`.
 
 ## How to run
 
