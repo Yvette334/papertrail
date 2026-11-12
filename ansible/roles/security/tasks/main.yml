@@ -14,7 +14,7 @@
     port: "{{ item }}"
     proto: tcp
   loop:
-    - "22"
+    - "{{ ssh_port }}"
     - "{{ app_port }}"
 
 - name: Turn the firewall on and block everything else
