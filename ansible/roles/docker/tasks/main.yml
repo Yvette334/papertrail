@@ -1,0 +1,26 @@
+---
+- name: Update the apt package list
+  ansible.builtin.apt:
+    update_cache: true
+  register: apt_update
+  until: apt_update is succeeded
+  retries: 3
+  delay: 10
+
+- name: Install Docker and the Python Docker library
+  ansible.builtin.apt:
+    name:
+      - docker.io
+      - python3-docker
+    state: present
+  register: docker_install
+  until: docker_install is succeeded
+  retries: 3
+  delay: 10
+
+- name: Make sure Docker is running and starts on boot
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: true
+    
