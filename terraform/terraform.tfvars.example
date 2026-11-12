@@ -1,4 +1,4 @@
-aws_region       = "your aws region"
-allowed_ssh_cidr = "public ip"   
-ssh_public_key   = "ssh-key file here "
+aws_region       = "<ypur-aws-region>"
+allowed_ssh_cidr = "<your-public-ipv4/32"   
+ssh_public_key   = "<your-public-key-file>"
 
