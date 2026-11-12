@@ -1,4 +1,14 @@
 ---
+- name: Pull the PaperTrail container image
+  community.docker.docker_image:
+    name: "{{ app_image }}"
+    source: pull
+    force_source: true
+  register: image_pull
+  retries: 3
+  delay: 5
+  until: image_pull has succeeded
+
 - name: Run the PaperTrail container
   community.docker.docker_container:
     name: "{{ app_name }}"
