@@ -28,7 +28,7 @@ Never put AWS access keys in `.tf` or `.tfvars` files. They are read from your A
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `aws_region` | yes | none | AWS region (we use `eu-north-1`) |
+| `aws_region` | yes | none | AWS region (we use `<your-region>`) |
 | `allowed_ssh_cidr` | yes | none | Your public IPv4 + `/32`. `0.0.0.0/0` is rejected by validation |
 | `ssh_public_key` | yes | none | Contents of your SSH **public** key (`.pub` file) |
 | `project_name` | no | `papertrail` | Name prefix and tags |
@@ -87,7 +87,7 @@ The instance and Elastic IP cost money while they exist. When you have finished:
 terraform destroy
 ```
 
-Then check in the AWS console (region `eu-north-1`) that the instance, Elastic IP and VPC are gone. After a new `apply` the public IP will be different, so update the Ansible inventory.
+Then check in the AWS console (region `<your-region>`) that the instance, Elastic IP and VPC are gone. After a new `apply` the public IP will be different, so update the Ansible inventory.
 
 ## Security notes
 
