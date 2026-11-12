@@ -1,0 +1,8 @@
+---
+- name: Configure the PaperTrail server
+  hosts: papertrail
+  become: true
+  roles:
+    - docker
+    - app
+    - security
