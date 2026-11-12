@@ -7,7 +7,7 @@
   register: image_pull
   retries: 3
   delay: 5
-  until: image_pull has succeeded
+  until: image_pull is succeeded
 
 - name: Run the PaperTrail container
   community.docker.docker_container:
