@@ -1,4 +1,4 @@
-aws_region       = "<ypur-aws-region>"
-allowed_ssh_cidr = "<your-public-ipv4/32"   
-ssh_public_key   = "<your-public-key-file>"
+aws_region       = "<your-region>"
+allowed_ssh_cidr = "<your-public-ipv4/32>"   
+ssh_public_key   = "<content-for-your-public-key-file>"
 
