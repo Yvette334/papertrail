@@ -1,7 +1,7 @@
 ---
 - name: Run the PaperTrail container
   community.docker.docker_container:
-    name: papertrail
+    name: "{{ app_name }}"
     image: "{{ app_image }}"
     state: started
     restart_policy: unless-stopped
