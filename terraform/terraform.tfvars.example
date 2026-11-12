@@ -1,10 +1,4 @@
-# Copy to terraform.tfvars and fill in your own values. Never commit terraform.tfvars.
-
-aws_region       = "<your-aws-region>"
-allowed_ssh_cidr = "<your-public-ipv4>/32"
-ssh_public_key   = "<contents-of-your-public-key-file>"
-
-aws_region       = "eu-north-1"
-allowed_ssh_cidr = "197.157.186.23/32"   
-ssh_public_key   = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF9IwJl1TFGWmA7UV1WW7caKoaRMyGJMI8BlQYeT3tmO owner@192.168.1.72"
+aws_region       = "your aws region"
+allowed_ssh_cidr = "public ip"   
+ssh_public_key   = "ssh-key file here "
 
