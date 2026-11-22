@@ -1,4 +1,5 @@
 const { getQuiz, scoreQuiz } = require("../services/quiz.service");
+const { saveAttempt } = require("../services/attempts.service");
 
 function startQuiz(req, res) {
   const { subject } = req.query;
@@ -12,12 +13,22 @@ function startQuiz(req, res) {
   res.json({ count: questions.length, questions });
 }
 
-function submitQuiz(req, res) {
-  const { answers } = req.body || {};
+async function submitQuiz(req, res) {
+  const { answers, subject } = req.body || {};
   if (!Array.isArray(answers) || answers.length === 0) {
     return res.status(400).json({ error: "answers must be a non-empty array" });
   }
-  res.json(scoreQuiz(answers));
+  const result = scoreQuiz(answers);
+
+  if (process.env.DATABASE_URL) {
+    try {
+      await saveAttempt(result.score, result.total, subject);
+    } catch (err) {
+      console.error("Failed to save quiz attempt:", err.message);
+    }
+  }
+
+  res.json(result);
 }
 
 module.exports = { startQuiz, submitQuiz };
