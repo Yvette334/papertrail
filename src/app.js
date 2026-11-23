@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const questionsRoutes = require("./routes/questions.routes");
 const quizRoutes = require("./routes/quiz.routes");
+const attemptsRoutes = require("./routes/attempts.routes");
 
 const app = express();
 app.use(cors());
@@ -10,6 +11,7 @@ app.use(express.json());
 app.get("/health", (req, res) => res.json({ status: "ok", service: "papertrail" }));
 app.use("/api/questions", questionsRoutes);
 app.use("/api/quiz", quizRoutes);
+app.use("/api/attempts", attemptsRoutes);
 
 app.use((req, res) => res.status(404).json({ error: "Route not found" }));
 
