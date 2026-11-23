@@ -1,4 +1,5 @@
-aws_region       = "<your-region>"
-allowed_ssh_cidr = "<your-public-ipv4/32>"   
-ssh_public_key   = "<content-for-your-public-key-file>"
-
+aws_region         = "eu-north-1"
+availability_zones = ["eu-north-1a", "eu-north-1b"]
+allowed_ssh_cidr   = "<your-public-ipv4/32>"
+ssh_public_key     = "<content-of-your-public-key-file>"
+db_password        = "<strong-rds-password>"
