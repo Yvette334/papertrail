@@ -87,7 +87,6 @@ jobs:
           key: ${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}
           options: |
             -i inventory.ini
-            -vvv
             -e "docker_image=${{ secrets.ECR_REPOSITORY_URL }}:${{ github.sha }}"
             -e "ecr_url=${{ secrets.ECR_REPOSITORY_URL }}"
             -e "database_url=${{ secrets.DATABASE_URL }}"
