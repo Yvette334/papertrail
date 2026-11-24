@@ -84,7 +84,11 @@ jobs:
         with:
           playbook: playbook.yml
           directory: ansible/
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}
           options: |
             -i inventory.ini
-            -e "app_image=${{ steps.login-ecr.outputs.registry }}/papertrail:${{ github.sha }}"
+            -e "docker_image=${{ secrets.ECR_REPOSITORY_URL }}:${{ github.sha }}"
+            -e "ecr_url=${{ secrets.ECR_REPOSITORY_URL }}"
+            -e "ecr_region=${{ secrets.AWS_REGION }}"
+            -e "aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }}"
+            -e "aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}"
