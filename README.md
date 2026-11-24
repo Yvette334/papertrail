@@ -253,3 +253,31 @@ Scan results will be recorded in [SECURITY.md](SECURITY.md) once the team's CI r
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Live Application
+
+http://BASTION_IP:3000
+
+## Architecture
+
+![Architecture diagram](docs/architecture.png)
+
+## CD Pipeline
+
+On every merge to `main`, the CD pipeline:
+
+1. Runs lint and tests.
+2. Builds the Docker image and pushes it to ECR tagged with the commit SHA.
+3. Runs the Ansible playbook, which logs in to ECR, pulls the new image and restarts the container.
+
+## Setup Instructions
+
+1. Copy `terraform/terraform.tfvars.example` to `terraform/terraform.tfvars` and fill in your values.
+2. Run `terraform init && terraform apply` from the `terraform/` directory.
+3. Update `ansible/inventory.ini` with the bastion IP and app VM private IP from the Terraform outputs.
+4. Run `ansible-playbook -i ansible/inventory.ini ansible/playbook.yml`.
+5. The app is available at `http://BASTION_IP:3000`.
+
+## Tearing Down
+
+Run `terraform destroy` from the `terraform/` directory. All resources including RDS and ECR are removed.

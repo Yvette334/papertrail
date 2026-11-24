@@ -1,28 +1,73 @@
 ---
+- name: Check that the deployment variables were provided
+  ansible.builtin.assert:
+    that:
+      - docker_image is defined
+      - database_url is defined
+      - aws_access_key_id is defined
+      - aws_secret_access_key is defined
+      - ecr_url != 'ECR_REGISTRY_URL'
+    fail_msg: "Pass docker_image, ecr_url, database_url and AWS keys with -e (see README)."
+
+- name: Install the AWS CLI (snap, because apt has no awscli on Ubuntu 24.04)
+  community.general.snap:
+    name: aws-cli
+    classic: true
+    state: present
+  register: aws_cli_install
+  until: aws_cli_install is succeeded
+  retries: 3
+  delay: 10
+
+- name: Create the application directory
+  ansible.builtin.file:
+    path: "/opt/{{ app_name }}"
+    state: directory
+    owner: root
+    mode: "0750"
+
+- name: Log in to ECR
+  ansible.builtin.shell: |
+    set -o pipefail
+    /snap/bin/aws ecr get-login-password --region {{ ecr_region }} \
+      | docker login --username AWS --password-stdin {{ ecr_url.split('/')[0] }}
+  args:
+    executable: /bin/bash
+  environment:
+    AWS_ACCESS_KEY_ID: "{{ aws_access_key_id }}"
+    AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key }}"
+    AWS_DEFAULT_REGION: "{{ ecr_region }}"
+  no_log: true
+  changed_when: false
+  register: ecr_login
+  until: ecr_login is succeeded
+  retries: 3
+  delay: 10
+
+- name: Copy the docker-compose file to the server
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "/opt/{{ app_name }}/docker-compose.yml"
+    owner: root
+    mode: "0600"        # contains DATABASE_URL
+  no_log: true
+
 - name: Pull the PaperTrail container image
   community.docker.docker_image:
-    name: "{{ app_image }}"
+    name: "{{ docker_image }}"
     source: pull
     force_source: true
   register: image_pull
+  until: image_pull is succeeded
   retries: 3
   delay: 5
-  until: image_pull is succeeded
 
-- name: Run the PaperTrail container
-  community.docker.docker_container:
-    name: "{{ app_name }}"
-    image: "{{ app_image }}"
-    state: started
-    restart_policy: unless-stopped
-    published_ports:
-      - "{{ app_port }}:{{ app_port }}"
-    env:
-      PORT: "{{ app_port }}"
-  register: app_container
-  until: app_container is succeeded
-  retries: 3
-  delay: 10
+- name: Deploy the app with docker compose
+  ansible.builtin.command: docker compose up -d --pull always
+  args:
+    chdir: "/opt/{{ app_name }}"
+  register: compose_up
+  changed_when: "'Started' in compose_up.stderr or 'Recreated' in compose_up.stderr or 'Created' in compose_up.stderr"
 
 - name: Check that the app health endpoint answers
   ansible.builtin.uri:
@@ -30,5 +75,5 @@
     status_code: 200
   register: health
   until: health.status == 200
-  retries: 5
+  retries: 10
   delay: 3
