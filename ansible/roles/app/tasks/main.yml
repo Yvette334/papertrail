@@ -8,6 +8,18 @@
   retries: 3
   delay: 10
 
+- name: Log in to ECR
+  ansible.builtin.shell: aws ecr get-login-password --region {{ ecr_region }} | docker login --username AWS --password-stdin {{ ecr_url }}
+  environment:
+    AWS_ACCESS_KEY_ID: "{{ aws_access_key_id }}"
+    AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key }}"
+    AWS_DEFAULT_REGION: "{{ ecr_region }}"
+  no_log: true
+  register: ecr_login
+  until: ecr_login is succeeded
+  retries: 3
+  delay: 10
+
 - name: Pull the PaperTrail container image
   community.docker.docker_image:
     name: "{{ docker_image }}"
