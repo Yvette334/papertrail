@@ -1,5 +1,6 @@
 ---
-app_image: josianekk/papertrail:v2
 app_port: 3000
 app_name: papertrail
 ssh_port: 22
+ecr_region: eu-north-1
+ecr_url: ECR_REGISTRY_URL
