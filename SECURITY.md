@@ -86,6 +86,16 @@ For each finding, the team records:
 
 Critical or high-severity findings should be reviewed and addressed as a priority before the affected change is merged or deployed.
 
+## Accepted risk: bastion SSH open to the internet
+
+- **What:** TCP 22 on the bastion security group allows 0.0.0.0/0.
+- **Why:** Demo convenience; client IPs vary.
+- **Mitigations:** Password authentication disabled (key-only), verified with `sshd -T`.
+- **Owner:** <you>
+- **Remediation:** Restrict the source CIDR to a known IP, or run `terraform destroy` after the demo.
+- **Revisit / expiry:** 
+
+
 ## Secrets and Sensitive Configuration
 
 Secrets must not be committed to the repository.
