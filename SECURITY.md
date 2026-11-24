@@ -68,6 +68,7 @@ CKV2_AWS_30 Query logging	RDS	Needs a custom database parameter group, beyond th
 CKV_AWS_136 KMS encryption	ECR	Images are already encrypted with the AWS-managed AES256 default.	Use a customer-managed KMS key.
 CKV_AWS_51 Immutable tags	ECR	The pipeline pushes :latest next to the commit-SHA tag, which an immutable repository would reject.	Deploy by commit SHA only and make tags immutable.
 CKV2_AWS_11 VPC flow logs	VPC	Needs IAM and CloudWatch resources beyond the least-privilege deploy user used here.	Enable flow logs with a retention period.
+CKV_AWS_24 SSH from 0.0.0.0/0	Bastion SG	GitHub-hosted runners have no stable IP, so the demo opens TCP 22 to the internet. Login is SSH-key only (password auth is off).	Restrict SSH to known IPs or use GitHub-hosted runner IP ranges / a self-hosted runner.
 
 Accepted risks are recorded as `#checkov:skip=<check>:<reason>` comments in `terraform/main.tf`, so the rationale is visible during code review.
 
