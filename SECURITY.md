@@ -10,13 +10,12 @@ The current `main` branch is the supported development version.
 
 ## Security Checks
 
-PaperTrail uses several automated checks as part of Formative 3:
+PaperTrail uses three automated security scans integrated into the CI/CD pipeline:
 
-- **npm audit** checks Node.js dependencies for known vulnerabilities.
-- **Trivy** scans the Docker container image for known vulnerabilities and misconfigurations.
-- **Checkov** scans Terraform infrastructure-as-code for security and configuration problems.
-- **GitHub Actions** runs the security checks on every pull request into `main`.
-- Pull requests require the configured CI checks to pass before merging.
+- **npm audit** checks Node.js dependencies for known vulnerabilities. Runs on every pull request.
+- **Trivy** scans the Docker container image for known OS and library vulnerabilities. Runs on every pull request and on every push to `main` via the CD pipeline.
+- **Checkov** scans Terraform infrastructure-as-code for security misconfigurations. Runs on every pull request via the `iac-scan` job.
+- All three scans run on every pull request into `main`. A failing scan blocks the merge.
 
 ## Security Findings
 
@@ -42,32 +41,39 @@ None of the findings were in application code. Verified in GitHub Actions: the r
 
 Checkov scans the Terraform code on every pull request (iac-scan job). The job fails the pull request if any check fails, so every finding is either fixed or recorded below as an accepted risk with a reason. Accepted risks are also written next to the code as #checkov:skip=<check>:<reason> comments in terraform/main.tf.
 
-Stage	Infrastructure	Passed	Failed	Skipped
-Formative 3, first scan	One VM in a public subnet	18	5	0
-Formative 3, after fixes	One VM in a public subnet	19	0	3
-Summative, first scan	Private subnets, NAT gateway, bastion, RDS, ECR	51	5	12
-Summative, after fixes	Same	52	0	15
-Findings fixed
-Check	Finding	What we did
-CKV_AWS_382 (Formative 3)	Security group allowed all outbound traffic	Outbound is limited to the ports the servers need (HTTPS and HTTP).
-CKV_AWS_394	Unpinned availability-zone data source	Availability zones now come from the availability_zones variable, so there is no unpinned lookup. [confirm this matches what you did]
-CKV2_AWS_60	A skip was written for "copy tags to snapshots" with the wrong reason	The skip was removed. The setting is enabled (copy_tags_to_snapshot = true) and the check now passes.
-Risks accepted (skipped with a reason)
-Check	Resource	Why we accepted it	What production would do
-CKV_AWS_126 Detailed monitoring	Bastion, app VM	Extra cost per instance; basic monitoring is enough for this project.	Enable detailed monitoring and alarms.
-CKV2_AWS_41 IAM role on instance	Bastion	SSH-only host that never calls AWS APIs, so a role would only add permissions.	Keep it role-free, or use Session Manager instead of SSH.
-CKV2_AWS_41 IAM role on instance	App VM	The deploy pipeline creates a short-lived ECR login token, so no long-lived AWS keys are stored on the VM. [confirm the pipeline really works this way]	Attach an instance role with read-only ECR access.
-CKV_AWS_157 Multi-AZ	RDS	Doubles the database cost; not needed for a student project.	Enable Multi-AZ.
-CKV_AWS_161 IAM database authentication	RDS	Needs extra IAM setup beyond the project scope; access is limited to the app security group and a password.	Enable IAM authentication.
-CKV_AWS_118 Enhanced monitoring	RDS	Needs an extra IAM role; basic CloudWatch metrics are enough.	Enable enhanced monitoring.
-CKV_AWS_353 Performance Insights	RDS	Extra cost for a small database.	Enable it for production workloads.
-CKV_AWS_354 Performance Insights KMS	RDS	Not applicable while Performance Insights is off.	Encrypt with a customer-managed key if enabled.
-CKV_AWS_293 Deletion protection	RDS	Must stay off so terraform destroy can remove the demo database and stop the cost.	Turn deletion protection on.
-CKV_AWS_129 Log exports	RDS	Exported logs create CloudWatch log groups that can outlive terraform destroy and keep costing money.	Export logs and set a retention period.
-CKV2_AWS_30 Query logging	RDS	Needs a custom database parameter group, beyond the project scope.	Add a parameter group that logs slow queries.
-CKV_AWS_136 KMS encryption	ECR	Images are already encrypted with the AWS-managed AES256 default.	Use a customer-managed KMS key.
-CKV_AWS_51 Immutable tags	ECR	The pipeline pushes :latest next to the commit-SHA tag, which an immutable repository would reject.	Deploy by commit SHA only and make tags immutable.
-CKV2_AWS_11 VPC flow logs	VPC	Needs IAM and CloudWatch resources beyond the least-privilege deploy user used here.	Enable flow logs with a retention period.
+| Stage | Infrastructure | Passed | Failed | Skipped |
+|---|---|---|---|---|
+| Formative 3, first scan | One VM in a public subnet | 18 | 5 | 0 |
+| Formative 3, after fixes | One VM in a public subnet | 19 | 0 | 3 |
+| Summative, first scan | Private subnets, NAT gateway, bastion, RDS, ECR | 51 | 5 | 12 |
+| Summative, after fixes | Same | 52 | 0 | 15 |
+
+#### Findings fixed
+
+| Check | Finding | What we did |
+|---|---|---|
+| CKV_AWS_382 (Formative 3) | Security group allowed all outbound traffic | Outbound is limited to the ports the servers need (HTTPS and HTTP). |
+| CKV_AWS_394 | Unpinned availability-zone data source | Availability zones now come from the `availability_zones` variable, so there is no unpinned lookup. |
+| CKV2_AWS_60 | A skip was written for "copy tags to snapshots" with the wrong reason | The skip was removed. The setting is enabled (`copy_tags_to_snapshot = true`) and the check now passes. |
+
+#### Risks accepted (skipped with a reason)
+
+| Check | Resource | Why we accepted it | What production would do |
+|---|---|---|---|
+| CKV_AWS_126 Detailed monitoring | Bastion, app VM | Extra cost per instance; basic monitoring is enough for this project. | Enable detailed monitoring and alarms. |
+| CKV2_AWS_41 IAM role on instance | Bastion | SSH-only host that never calls AWS APIs, so a role would only add permissions. | Keep it role-free, or use Session Manager instead of SSH. |
+| CKV2_AWS_41 IAM role on instance | App VM | The deploy pipeline creates a short-lived ECR login token, so no long-lived AWS keys are stored on the VM. | Attach an instance role with read-only ECR access. |
+| CKV_AWS_157 Multi-AZ | RDS | Doubles the database cost; not needed for a student project. | Enable Multi-AZ. |
+| CKV_AWS_161 IAM database authentication | RDS | Needs extra IAM setup beyond the project scope; access is limited to the app security group and a password. | Enable IAM authentication. |
+| CKV_AWS_118 Enhanced monitoring | RDS | Needs an extra IAM role; basic CloudWatch metrics are enough. | Enable enhanced monitoring. |
+| CKV_AWS_353 Performance Insights | RDS | Extra cost for a small database. | Enable it for production workloads. |
+| CKV_AWS_354 Performance Insights KMS | RDS | Not applicable while Performance Insights is off. | Encrypt with a customer-managed key if enabled. |
+| CKV_AWS_293 Deletion protection | RDS | Must stay off so `terraform destroy` can remove the demo database and stop the cost. | Turn deletion protection on. |
+| CKV_AWS_129 Log exports | RDS | Exported logs create CloudWatch log groups that can outlive `terraform destroy` and keep costing money. | Export logs and set a retention period. |
+| CKV2_AWS_30 Query logging | RDS | Needs a custom database parameter group, beyond the project scope. | Add a parameter group that logs slow queries. |
+| CKV_AWS_136 KMS encryption | ECR | Images are already encrypted with the AWS-managed AES256 default. | Use a customer-managed KMS key. |
+| CKV_AWS_51 Immutable tags | ECR | The pipeline pushes `:latest` next to the commit-SHA tag, which an immutable repository would reject. | Deploy by commit SHA only and make tags immutable. |
+| CKV2_AWS_11 VPC flow logs | VPC | Needs IAM and CloudWatch resources beyond the least-privilege deploy user used here. | Enable flow logs with a retention period. |
 
 Accepted risks are recorded as `#checkov:skip=<check>:<reason>` comments in `terraform/main.tf`, so the rationale is visible during code review.
 
