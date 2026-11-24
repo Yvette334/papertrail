@@ -57,4 +57,3 @@ tfplan
 *.retry
 ansible/secrets.yml
 
-ansible/inventory.ini
