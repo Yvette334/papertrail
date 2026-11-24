@@ -2,4 +2,6 @@
 APP_VM_PRIVATE_IP ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/YOUR_KEY
 
 [papertrail:vars]
-ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyCommand="ssh -W %h:%p -i ~/.ssh/YOUR_KEY ubuntu@BASTION_IP"'
+# Inner ssh is a separate process, so it needs -i on the key and
+# StrictHostKeyChecking=no on the bastion hop.
+ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentitiesOnly=yes -o ProxyCommand="ssh -W %h:%p -i ~/.ssh/YOUR_KEY -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentitiesOnly=yes ubuntu@BASTION_PUBLIC_IP"'
