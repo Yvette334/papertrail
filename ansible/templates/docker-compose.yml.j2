@@ -1,0 +1,9 @@
+services:
+  app:
+    image: "{{ docker_image }}"
+    restart: unless-stopped
+    ports:
+      - "{{ app_port }}:{{ app_port }}"
+    environment:
+      PORT: "{{ app_port }}"
+      DATABASE_URL: "{{ database_url }}"
