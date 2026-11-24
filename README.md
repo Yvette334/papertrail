@@ -271,7 +271,29 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Live Application
 
-http://13.51.16.163:300
+http://13.51.16.163:3000
+
+### Verify the deployment
+
+After deploying, confirm the application is running:
+
+```bash
+curl http://13.51.16.163:3000/health
+```
+
+Expected response:
+
+```json
+{"status":"ok","service":"papertrail"}
+```
+
+Confirm the database connection by checking quiz attempt history:
+
+```bash
+curl http://13.51.16.163:3000/api/attempts
+```
+
+A `200 OK` response confirms the app is connected to RDS PostgreSQL.
 
 ## Architecture
 
@@ -291,7 +313,7 @@ On every merge to `main`, the CD pipeline:
 2. Run `terraform init && terraform apply` from the `terraform/` directory.
 3. Update `ansible/inventory.ini` with the bastion IP and app VM private IP from the Terraform outputs.
 4. Run `ansible-playbook -i ansible/inventory.ini ansible/playbook.yml`.
-5. The app is available at `http://13.51.16.163:300`.
+5. The app is available at `http://13.51.16.163:3000`.
 
 ## Tearing Down
 

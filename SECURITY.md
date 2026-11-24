@@ -41,7 +41,6 @@ None of the findings were in application code. Verified in GitHub Actions: the r
 
 Checkov scans the Terraform code on every pull request (iac-scan job). The job fails the pull request if any check fails, so every finding is either fixed or recorded below as an accepted risk with a reason. Accepted risks are also written next to the code as #checkov:skip=<check>:<reason> comments in terraform/main.tf.
 
-<<<<<<< HEAD
 | Stage | Infrastructure | Passed | Failed | Skipped |
 |---|---|---|---|---|
 | Formative 3, first scan | One VM in a public subnet | 18 | 5 | 0 |
@@ -61,6 +60,7 @@ Checkov scans the Terraform code on every pull request (iac-scan job). The job f
 
 | Check | Resource | Why we accepted it | What production would do |
 |---|---|---|---|
+| CKV_AWS_24 SSH from 0.0.0.0/0 | Bastion SG | GitHub-hosted runners have no stable IP, so the demo opens TCP 22 to the internet. Login is SSH-key only (password auth is off). | Restrict SSH to known IPs or use GitHub-hosted runner IP ranges / a self-hosted runner. |
 | CKV_AWS_126 Detailed monitoring | Bastion, app VM | Extra cost per instance; basic monitoring is enough for this project. | Enable detailed monitoring and alarms. |
 | CKV2_AWS_41 IAM role on instance | Bastion | SSH-only host that never calls AWS APIs, so a role would only add permissions. | Keep it role-free, or use Session Manager instead of SSH. |
 | CKV2_AWS_41 IAM role on instance | App VM | The deploy pipeline creates a short-lived ECR login token, so no long-lived AWS keys are stored on the VM. | Attach an instance role with read-only ECR access. |
@@ -75,35 +75,6 @@ Checkov scans the Terraform code on every pull request (iac-scan job). The job f
 | CKV_AWS_136 KMS encryption | ECR | Images are already encrypted with the AWS-managed AES256 default. | Use a customer-managed KMS key. |
 | CKV_AWS_51 Immutable tags | ECR | The pipeline pushes `:latest` next to the commit-SHA tag, which an immutable repository would reject. | Deploy by commit SHA only and make tags immutable. |
 | CKV2_AWS_11 VPC flow logs | VPC | Needs IAM and CloudWatch resources beyond the least-privilege deploy user used here. | Enable flow logs with a retention period. |
-=======
-Stage	Infrastructure	Passed	Failed	Skipped
-Formative 3, first scan	One VM in a public subnet	18	5	0
-Formative 3, after fixes	One VM in a public subnet	19	0	3
-Summative, first scan	Private subnets, NAT gateway, bastion, RDS, ECR	51	5	12
-Summative, after fixes	Same	52	0	15
-Findings fixed
-Check	Finding	What we did
-CKV_AWS_382 (Formative 3)	Security group allowed all outbound traffic	Outbound is limited to the ports the servers need (HTTPS and HTTP).
-CKV_AWS_394	Unpinned availability-zone data source	Availability zones now come from the availability_zones variable, so there is no unpinned lookup. [confirm this matches what you did]
-CKV2_AWS_60	A skip was written for "copy tags to snapshots" with the wrong reason	The skip was removed. The setting is enabled (copy_tags_to_snapshot = true) and the check now passes.
-Risks accepted (skipped with a reason)
-Check	Resource	Why we accepted it	What production would do
-CKV_AWS_126 Detailed monitoring	Bastion, app VM	Extra cost per instance; basic monitoring is enough for this project.	Enable detailed monitoring and alarms.
-CKV2_AWS_41 IAM role on instance	Bastion	SSH-only host that never calls AWS APIs, so a role would only add permissions.	Keep it role-free, or use Session Manager instead of SSH.
-CKV2_AWS_41 IAM role on instance	App VM	The deploy pipeline creates a short-lived ECR login token, so no long-lived AWS keys are stored on the VM. [confirm the pipeline really works this way]	Attach an instance role with read-only ECR access.
-CKV_AWS_157 Multi-AZ	RDS	Doubles the database cost; not needed for a student project.	Enable Multi-AZ.
-CKV_AWS_161 IAM database authentication	RDS	Needs extra IAM setup beyond the project scope; access is limited to the app security group and a password.	Enable IAM authentication.
-CKV_AWS_118 Enhanced monitoring	RDS	Needs an extra IAM role; basic CloudWatch metrics are enough.	Enable enhanced monitoring.
-CKV_AWS_353 Performance Insights	RDS	Extra cost for a small database.	Enable it for production workloads.
-CKV_AWS_354 Performance Insights KMS	RDS	Not applicable while Performance Insights is off.	Encrypt with a customer-managed key if enabled.
-CKV_AWS_293 Deletion protection	RDS	Must stay off so terraform destroy can remove the demo database and stop the cost.	Turn deletion protection on.
-CKV_AWS_129 Log exports	RDS	Exported logs create CloudWatch log groups that can outlive terraform destroy and keep costing money.	Export logs and set a retention period.
-CKV2_AWS_30 Query logging	RDS	Needs a custom database parameter group, beyond the project scope.	Add a parameter group that logs slow queries.
-CKV_AWS_136 KMS encryption	ECR	Images are already encrypted with the AWS-managed AES256 default.	Use a customer-managed KMS key.
-CKV_AWS_51 Immutable tags	ECR	The pipeline pushes :latest next to the commit-SHA tag, which an immutable repository would reject.	Deploy by commit SHA only and make tags immutable.
-CKV2_AWS_11 VPC flow logs	VPC	Needs IAM and CloudWatch resources beyond the least-privilege deploy user used here.	Enable flow logs with a retention period.
-CKV_AWS_24 SSH from 0.0.0.0/0	Bastion SG	GitHub-hosted runners have no stable IP, so the demo opens TCP 22 to the internet. Login is SSH-key only (password auth is off).	Restrict SSH to known IPs or use GitHub-hosted runner IP ranges / a self-hosted runner.
->>>>>>> 9a28b5ebf3f43689bf715aa4a91878e84e782126
 
 Accepted risks are recorded as `#checkov:skip=<check>:<reason>` comments in `terraform/main.tf`, so the rationale is visible during code review.
 
@@ -120,16 +91,6 @@ For each finding, the team records:
 5. The current status.
 
 Critical or high-severity findings should be reviewed and addressed as a priority before the affected change is merged or deployed.
-
-## Accepted risk: bastion SSH open to the internet
-
-- **What:** TCP 22 on the bastion security group allows 0.0.0.0/0.
-- **Why:** Demo convenience; client IPs vary.
-- **Mitigations:** Password authentication disabled (key-only), verified with `sshd -T`.
-- **Owner:** <you>
-- **Remediation:** Restrict the source CIDR to a known IP, or run `terraform destroy` after the demo.
-- **Revisit / expiry:** 
-
 
 ## Secrets and Sensitive Configuration
 
