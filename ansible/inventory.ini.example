@@ -1,2 +1,6 @@
 [papertrail]
-SERVER_IP ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/YOUR_KEY
+APP_VM_PRIVATE_IP ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/YOUR_KEY
+
+[papertrail:vars]
+
+ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentitiesOnly=yes -o ProxyCommand="ssh -W %h:%p -i ~/.ssh/YOUR_KEY -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentitiesOnly=yes ubuntu@BASTION_PUBLIC_IP"'

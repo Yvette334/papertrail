@@ -11,6 +11,7 @@
   ansible.builtin.apt:
     name:
       - docker.io
+      - docker-compose-v2
       - python3-docker
     state: present
   register: docker_install

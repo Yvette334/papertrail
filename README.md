@@ -271,7 +271,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Live Application
 
-http://BASTION_IP:3000
+http://13.51.16.163:300
 
 ## Architecture
 
@@ -291,7 +291,7 @@ On every merge to `main`, the CD pipeline:
 2. Run `terraform init && terraform apply` from the `terraform/` directory.
 3. Update `ansible/inventory.ini` with the bastion IP and app VM private IP from the Terraform outputs.
 4. Run `ansible-playbook -i ansible/inventory.ini ansible/playbook.yml`.
-5. The app is available at `http://BASTION_IP:3000`.
+5. The app is available at `http://13.51.16.163:300`.
 
 ## Tearing Down
 

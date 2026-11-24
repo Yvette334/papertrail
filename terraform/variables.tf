@@ -62,12 +62,12 @@ variable "app_port" {
 }
 
 variable "allowed_ssh_cidr" {
-  description = "Your IP range allowed to SSH in, e.g. 203.0.113.10/32. Never use 0.0.0.0/0."
-  type        = string
+  description = "CIDR blocks allowed to SSH to the bastion. Demo includes 0.0.0.0/0 so GitHub-hosted runners can reach it; login is SSH-key only."
+  type        = list(string)
 
   validation {
-    condition     = can(cidrnetmask(var.allowed_ssh_cidr)) && var.allowed_ssh_cidr != "0.0.0.0/0"
-    error_message = "allowed_ssh_cidr must be a valid CIDR block and must not be 0.0.0.0/0."
+    condition     = length(var.allowed_ssh_cidr) > 0 && alltrue([for c in var.allowed_ssh_cidr : can(cidrnetmask(c))])
+    error_message = "allowed_ssh_cidr must be a non-empty list of valid CIDR blocks."
   }
 }
 
