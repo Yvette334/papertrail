@@ -1,28 +1,22 @@
 ---
+- name: Install the AWS CLI
+  ansible.builtin.apt:
+    name: awscli
+    state: present
+  register: aws_cli_install
+  until: aws_cli_install is succeeded
+  retries: 3
+  delay: 10
+
 - name: Pull the PaperTrail container image
   community.docker.docker_image:
-    name: "{{ app_image }}"
+    name: "{{ docker_image }}"
     source: pull
     force_source: true
   register: image_pull
   retries: 3
   delay: 5
   until: image_pull is succeeded
-
-- name: Run the PaperTrail container
-  community.docker.docker_container:
-    name: "{{ app_name }}"
-    image: "{{ app_image }}"
-    state: started
-    restart_policy: unless-stopped
-    published_ports:
-      - "{{ app_port }}:{{ app_port }}"
-    env:
-      PORT: "{{ app_port }}"
-  register: app_container
-  until: app_container is succeeded
-  retries: 3
-  delay: 10
 
 - name: Check that the app health endpoint answers
   ansible.builtin.uri:
