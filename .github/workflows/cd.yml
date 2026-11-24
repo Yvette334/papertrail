@@ -90,6 +90,7 @@ jobs:
             -vvv
             -e "docker_image=${{ secrets.ECR_REPOSITORY_URL }}:${{ github.sha }}"
             -e "ecr_url=${{ secrets.ECR_REPOSITORY_URL }}"
+            -e "database_url=${{ secrets.DATABASE_URL }}"
             -e "ecr_region=${{ secrets.AWS_REGION }}"
             -e "aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }}"
             -e "aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}"
