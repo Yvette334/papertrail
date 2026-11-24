@@ -164,16 +164,17 @@ resource "aws_default_security_group" "default" {
 }
 
 resource "aws_security_group" "bastion" {
+  #checkov:skip=CKV_AWS_24:Demo CD uses GitHub-hosted runners with no stable IP; SSH is key-only (no password auth)
   name        = "${var.project_name}-${var.environment}-bastion-sg"
-  description = "SSH jump host: admin IP only"
+  description = "SSH jump host for Ansible and GitHub Actions (key-only login)"
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    description = "SSH from admin IP only"
+    description = "SSH from team IPs and GitHub runners (0.0.0.0/0 for demo)"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = [var.allowed_ssh_cidr]
+    cidr_blocks = var.allowed_ssh_cidr
   }
 
   egress {

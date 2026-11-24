@@ -9,7 +9,7 @@ Provisions the AWS infrastructure for the PaperTrail backend: a VPC with public 
 | VPC (`10.0.0.0/16`) | Isolated virtual network |
 | Public subnet (`10.0.1.0/24`) + IGW + public route table | Bastion and NAT gateway |
 | Private subnets (`10.0.2.0/24`, `10.0.3.0/24`) + NAT + private route table | App VM and RDS (no public IPs) |
-| Bastion EC2 (`t3.micro`) + Elastic IP | SSH jump host; SSH only from `allowed_ssh_cidr` |
+| Bastion EC2 (`t3.micro`) + Elastic IP | SSH jump host; SSH from `allowed_ssh_cidr` (demo includes 0.0.0.0/0, key-only) |
 | App EC2 (`t3.micro`) in private subnet | Runs the Docker container; SSH only from bastion SG |
 | RDS PostgreSQL (`db.t3.micro`) | Quiz attempt history; port 5432 only from app SG |
 | ECR repository | Private image registry (`force_delete = true` for easy teardown) |
@@ -28,7 +28,7 @@ Never put AWS access keys in `.tf` or `.tfvars` files.
 |----------|----------|---------|-------------|
 | `aws_region` | yes | none | AWS region |
 | `availability_zones` | yes | none | Exactly two AZ names, e.g. `["eu-north-1a", "eu-north-1b"]` |
-| `allowed_ssh_cidr` | yes | none | Your public IPv4 + `/32`. `0.0.0.0/0` is rejected |
+| `allowed_ssh_cidr` | yes | none | List of CIDRs allowed to SSH to the bastion. Demo uses `0.0.0.0/0` for GitHub-hosted runners (key-only login) |
 | `ssh_public_key` | yes | none | Contents of your SSH **public** key (`.pub` file) |
 | `db_password` | yes | none | RDS master password (sensitive) |
 | `project_name` | no | `papertrail` | Name prefix and tags |
@@ -93,7 +93,7 @@ NAT Gateway and RDS incur ongoing cost — destroy when you are done. After a ne
 
 ## Security notes
 
-- SSH to the bastion is only from `allowed_ssh_cidr`. The app VM accepts SSH only from the bastion security group.
+- SSH to the bastion is from `allowed_ssh_cidr`. For the demo this includes `0.0.0.0/0` so GitHub Actions can jump through; login is SSH-key only. The app VM accepts SSH only from the bastion security group.
 - RDS is not publicly accessible; only the app security group can reach port 5432.
 - State files (`*.tfstate`) and `terraform.tfvars` can contain secrets and are git-ignored.
 - Accepted Checkov risks are documented in the repository's `SECURITY.md`.
