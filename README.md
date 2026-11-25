@@ -19,7 +19,7 @@ PaperTrail is a REST API for exam practice. A student browses past-paper questio
 
 The code is split into routes, controllers, services and data. All data access is isolated in `questions.service.js`, so the JSON file can later be replaced by a database, and the questions and quiz parts could become separate microservices.
 
-Login, attempt history and teacher question management are planned and tracked on the project board. Docker Compose and a CI pipeline are included in Formative 2. Cloud deployment is planned for a later formative.
+Login and teacher question management are planned and tracked on the project board. Quiz attempt history is saved to RDS PostgreSQL. The application is deployed on AWS behind a bastion host, with a CD pipeline that builds and pushes the Docker image to ECR and runs Ansible on every merge to `main`.
 
 ### Target Users
 - Secondary and university students preparing for exams
@@ -34,7 +34,7 @@ Login, attempt history and teacher question management are planned and tracked o
 
 - **Backend**: Node.js, Express
 - **Frontend**: None for now (REST API)
-- **Database**: JSON file (`src/data/questions.json`); a real database is planned
+- **Database**: JSON file (`src/data/questions.json`) for questions; RDS PostgreSQL for quiz attempt history
 - **Other**: Jest and Supertest for testing; ESLint for linting; Git, GitHub, GitHub Projects; Docker and Docker Compose; GitHub Actions for CI; Terraform and Ansible for infrastructure provisioning and configuration management.
 
 ## Getting Started
@@ -179,8 +179,15 @@ papertrail/
 ├── .github/
 │   ├── ISSUE_TEMPLATE/
 │   ├── workflows/
-│   │   └── ci.yml
+│   │   ├── ci.yml
+│   │   └── cd.yml
 │   └── CODEOWNERS
+├── ansible/
+│   ├── inventory.ini
+│   ├── playbook.yml
+│   └── README.md
+├── docs/
+│   └── architecture.png
 ├── src/
 │   ├── app.js
 │   ├── server.js
@@ -188,6 +195,12 @@ papertrail/
 │   ├── controllers/
 │   ├── services/
 │   └── data/questions.json
+├── terraform/
+│   ├── main.tf
+│   ├── variables.tf
+│   ├── outputs.tf
+│   ├── terraform.tfvars.example
+│   └── README.md
 ├── tests/
 │   ├── api.test.js
 │   ├── questions.test.js
@@ -195,11 +208,13 @@ papertrail/
 ├── .dockerignore
 ├── .env.example
 ├── .gitignore
+├── CHANGELOG.md
 ├── docker-compose.yml
 ├── Dockerfile
 ├── eslint.config.js
 ├── LICENSE
-└── package.json
+├── package.json
+└── SECURITY.md
 ```
 
 ## Infrastructure
@@ -221,11 +236,11 @@ PaperTrail runs the following automated security checks as part of the Formative
 - **npm audit** — scans Node.js dependencies for known vulnerabilities.
 - **Trivy** — scans the Docker container image for known vulnerabilities and misconfigurations.
 - **Checkov** — scans the Terraform infrastructure code for security and configuration problems.
-- **GitHub Actions** — the CI workflow will run the above checks on every pull request into `main` once the scanning steps have been added.
+- **GitHub Actions** — all three scans run on every pull request into `main`; a pull request cannot be merged until the required checks pass.
 - **Pull request review** — every change to `main` requires at least one approval from another team member.
 - **Protected `main` branch** — force pushes and direct commits are blocked; the full ruleset is described in the Branch protection table below.
 
-Scan results will be recorded in [SECURITY.md](SECURITY.md) once the team's CI runs have produced output. No scan results are claimed here until they are available.
+Full scan results, findings, and remediation decisions are documented in [SECURITY.md](SECURITY.md).
 
 ## Security and Collaboration Practices
 
@@ -256,7 +271,29 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Live Application
 
-http://13.51.16.163:300
+http://13.51.16.163:3000
+
+### Verify the deployment
+
+After deploying, confirm the application is running:
+
+```bash
+curl http://13.51.16.163:3000/health
+```
+
+Expected response:
+
+```json
+{"status":"ok","service":"papertrail"}
+```
+
+Confirm the database connection by checking quiz attempt history:
+
+```bash
+curl http://13.51.16.163:3000/api/attempts
+```
+
+A `200 OK` response confirms the app is connected to RDS PostgreSQL.
 
 ## Architecture
 
@@ -276,7 +313,7 @@ On every merge to `main`, the CD pipeline:
 2. Run `terraform init && terraform apply` from the `terraform/` directory.
 3. Update `ansible/inventory.ini` with the bastion IP and app VM private IP from the Terraform outputs.
 4. Run `ansible-playbook -i ansible/inventory.ini ansible/playbook.yml`.
-5. The app is available at `http://13.51.16.163:300`.
+5. The app is available at `http://13.51.16.163:3000`.
 
 ## Tearing Down
 
