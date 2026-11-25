@@ -306,6 +306,10 @@ resource "aws_instance" "bastion" {
   tags = {
     Name = "${var.project_name}-${var.environment}-bastion"
   }
+
+  lifecycle {
+    ignore_changes = [associate_public_ip_address]
+  }
 }
 
 resource "aws_eip" "bastion" {
