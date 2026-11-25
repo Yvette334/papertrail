@@ -8,7 +8,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get("/health", (req, res) => res.json({ status: "ok", service: "papertrail" }));
+app.get("/health", (req, res) => res.json({ status: "ok", service: "papertrail", version: "1.1.0"}));
 app.use("/api/questions", questionsRoutes);
 app.use("/api/quiz", quizRoutes);
 app.use("/api/attempts", attemptsRoutes);
