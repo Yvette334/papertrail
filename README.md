@@ -271,7 +271,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Live Application
 
-http://13.51.16.163:3000
+http://13.51.16.163:3000/health
 
 ### Verify the deployment
 
