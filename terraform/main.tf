@@ -165,6 +165,7 @@ resource "aws_default_security_group" "default" {
 
 resource "aws_security_group" "bastion" {
   #checkov:skip=CKV_AWS_24:Demo CD uses GitHub-hosted runners with no stable IP; SSH is key-only (no password auth)
+  #checkov:skip=CKV_AWS_260:Demo publishes the API at the bastion public IP on port 3000, which is reverse-proxied to the private app VM
   name        = "${var.project_name}-${var.environment}-bastion-sg"
   description = "SSH jump host for Ansible and GitHub Actions (key-only login)"
   vpc_id      = aws_vpc.main.id
@@ -177,10 +178,26 @@ resource "aws_security_group" "bastion" {
     cidr_blocks = var.allowed_ssh_cidr
   }
 
+  ingress {
+    description = "PaperTrail API reverse-proxied from the bastion to the private app VM"
+    from_port   = var.app_port
+    to_port     = var.app_port
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     description = "SSH to app VM"
     from_port   = 22
     to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  egress {
+    description = "Forward API traffic to the private app VM"
+    from_port   = var.app_port
+    to_port     = var.app_port
     protocol    = "tcp"
     cidr_blocks = [var.vpc_cidr]
   }
