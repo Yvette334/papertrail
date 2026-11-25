@@ -61,6 +61,7 @@ Checkov scans the Terraform code on every pull request (iac-scan job). The job f
 | Check | Resource | Why we accepted it | What production would do |
 |---|---|---|---|
 | CKV_AWS_24 SSH from 0.0.0.0/0 | Bastion SG | GitHub-hosted runners have no stable IP, so the demo opens TCP 22 to the internet. Login is SSH-key only (password auth is off). | Restrict SSH to known IPs or use GitHub-hosted runner IP ranges / a self-hosted runner. |
+| CKV_AWS_260 app port from 0.0.0.0/0 | Bastion SG | The live demo URL is `http://<bastion-eip>:3000`, reverse-proxied to the private app VM. | Put the API behind a load balancer or restrict the CIDR. |
 | CKV_AWS_126 Detailed monitoring | Bastion, app VM | Extra cost per instance; basic monitoring is enough for this project. | Enable detailed monitoring and alarms. |
 | CKV2_AWS_41 IAM role on instance | Bastion | SSH-only host that never calls AWS APIs, so a role would only add permissions. | Keep it role-free, or use Session Manager instead of SSH. |
 | CKV2_AWS_41 IAM role on instance | App VM | The deploy pipeline creates a short-lived ECR login token, so no long-lived AWS keys are stored on the VM. | Attach an instance role with read-only ECR access. |
