@@ -1,282 +1,157 @@
+# Ansible: PaperTrail server configuration
 
-# **React Guided Learning Activity: Theme Switcher & useReducer**
+This directory configures the PaperTrail application server (the app VM in the private subnet) and deploys the container image from ECR.
 
-**Title:** Implementing a Theme Switcher with useContext & State Management with useReducer
+The VM has no public IP. Ansible reaches it by SSH **through the bastion host**, using a `ProxyCommand` in the inventory.
 
-**Objective:** Learn how to use the React Context API (`useContext`) for **global state management** (theme switching) and `useReducer` for **managing complex state** (task manager).
+## What it does
 
----
+The playbook (`playbook.yml`) runs three roles, in this order:
 
-## **Tools:**
-* GitHub Classroom  
-* GitHub Codespaces (or a local development environment with Node.js and a suitable IDE like VS Code)  
-* Vite  
-* React  
-* TypeScript  
+| Role | What it does |
+|---|---|
+| `docker` | Updates apt, installs Docker, Docker Compose v2 and the Python Docker library, and makes sure Docker is running and starts on boot |
+| `app` | Checks the deployment variables, installs the AWS CLI, logs in to ECR, copies the compose file to the server, pulls the image, runs `docker compose up -d`, and checks `/health` |
+| `security` | Installs UFW (allows SSH and the app port, denies everything else), disables root SSH login and password SSH login |
 
----
+The `app` role runs before `security`, so the app is deployed and health-checked before the firewall is tightened.
 
-## **Color Palette**
-Use these colors for styling:
+## Directory layout
 
 ```
-Light Theme
-===========
-Background: #FFFFFF
-Text: #000000
-Button: #1E90FF
-
-Dark Theme
-===========
-Background: #242629
-Text: #FFFFFF
-Button: #85D1B0
+ansible/
+├── playbook.yml                  # runs the roles: docker, app, security
+├── inventory.ini                 # target host + bastion proxy (key: .ansible_key)
+├── inventory.ini.example         # template with placeholders
+├── group_vars/all.yml            # defaults: app_port, app_name, ssh_port, ecr_region
+├── templates/
+│   └── docker-compose.yml.j2     # compose file copied to the server
+└── roles/
+    ├── docker/tasks/main.yml
+    ├── app/tasks/main.yml
+    └── security/
+        ├── tasks/main.yml
+        └── handlers/main.yml     # restarts SSH after config changes
 ```
 
----
+## Variables
 
-## **GitHub Classroom Setup**
+These must be passed with `-e` (they are never committed to git):
 
-1. **Create a Repository:** Set up a new repository on GitHub.  
-2. **Add a README.md:** Copy and paste these instructions into a `README.md` file.  
-3. **Initial Commit:** Make an initial commit to the repository.  
-4. **GitHub Classroom Assignment:** Create a new assignment in GitHub Classroom and link it to the repository.  
+| Variable | Meaning |
+|---|---|
+| `docker_image` | Full image name, for example `<registry>/papertrail:<tag>` |
+| `ecr_url` | ECR registry host (the part before `/papertrail`) |
+| `database_url` | PostgreSQL connection string for the RDS database |
+| `aws_access_key_id` | AWS access key used for the ECR login |
+| `aws_secret_access_key` | AWS secret key used for the ECR login |
 
----
+Defaults in `group_vars/all.yml`: `app_port: 3000`, `app_name: papertrail`, `ssh_port: 22`, `ecr_region: eu-north-1`.
 
-# **Guided Learning Activity Steps**
+The first task of the `app` role stops the run with a clear message if any of these is missing.
 
-## **Part 1: Project Setup with Vite**
-1. **Open GitHub Codespaces or Clone Locally**
-2. **Create the React Project**
-   ```bash
-   npm create vite@latest react-state-management -- --template react-ts
-   ```
-3. **Navigate to the Project Directory**
-   ```bash
-   cd react-state-management
-   ```
-4. **Install Dependencies**
-   ```bash
-   npm install
-   ```
-5. **Start the Development Server**
-   ```bash
-   npm run dev
-   ```
+## Run it from your machine
 
-Ensure the development server is running at `http://localhost:5173/`.
+Ansible does not run on native Windows. Use Linux, macOS or WSL.
 
----
+**1. Install Ansible and the collections**
 
-# **Section 1: Theme Switcher with useContext (Navbar Example)**
-
-### **Step 1: Creating Theme Constants**
-1. **Inside `src/`, create a folder named `constants/`.**
-2. **Inside `constants/`, create `theme.ts`:**
-   ```typescript
-   export const LIGHT_THEME = "light";
-   export const DARK_THEME = "dark";
-   ```
-
----
-
-### **Step 2: Creating the Theme Context**
-1. **Inside `src/context/`, create a file named `ThemeContext.tsx`:**
-   ```typescript
-   import React, { createContext, useContext, useState, ReactNode } from "react";
-   import { LIGHT_THEME, DARK_THEME } from "../constants/theme";
-
-   type Theme = typeof LIGHT_THEME | typeof DARK_THEME;
-
-   interface ThemeContextType {
-     theme: Theme;
-     toggleTheme: () => void;
-   }
-
-   const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
-
-   export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-     const [theme, setTheme] = useState<Theme>(LIGHT_THEME);
-
-     const toggleTheme = () => {
-       setTheme((prevTheme) => (prevTheme === LIGHT_THEME ? DARK_THEME : LIGHT_THEME));
-     };
-
-     return (
-       <ThemeContext.Provider value={{ theme, toggleTheme }}>
-         {children}
-       </ThemeContext.Provider>
-     );
-   };
-
-   export const useTheme = () => {
-     const context = useContext(ThemeContext);
-     if (!context) {
-       throw new Error("useTheme must be used within a ThemeProvider");
-     }
-     return context;
-   };
-   ```
-
----
-
-### **Step 3: Creating the Navbar with Theme Toggle**
-1. **Inside `src/components/`, create `Navbar.tsx`:**
-   ```typescript
-   import React from "react";
-   import { useTheme } from "../context/ThemeContext";
-   import styles from "./Navbar.module.css";
-   import { DARK_THEME, LIGHT_THEME } from "../constants/theme";
-
-   const Navbar = () => {
-     const { theme, toggleTheme } = useTheme();
-
-     return (
-       <nav className={styles.navbar}>
-         <span className={styles.brand}>React App</span>
-         <button className={styles.toggleButton} onClick={toggleTheme}>
-           Switch to {theme === LIGHT_THEME ? DARK_THEME : LIGHT_THEME} Mode
-         </button>
-       </nav>
-     );
-   };
-
-   export default Navbar;
-   ```
-
-2. **Create `Navbar.module.css` for styling:**
-   ```css
-   .navbar {
-     display: flex;
-     justify-content: space-between;
-     align-items: center;
-     padding: 10px 20px;
-     background-color: #1E90FF;
-     color: white;
-   }
-
-   .brand {
-     font-size: 1.5rem;
-     font-weight: bold;
-   }
-
-   .toggleButton {
-     padding: 8px 16px;
-     font-size: 16px;
-     cursor: pointer;
-     border: none;
-     border-radius: 5px;
-     background-color: white;
-     color: #1E90FF;
-   }
-   ```
-
----
-
-# **Section 2: State Management with useReducer (Task Manager Example)**
-
-### **Step 1: Creating the Task Reducer**
-Inside `src/reducers/`, create `taskReducer.ts`:
-```typescript
-type Task = { id: number; text: string };
-
-type State = Task[];
-
-type Action =
-  | { type: "add"; payload: string }
-  | { type: "remove"; payload: number };
-
-export function taskReducer(state: State, action: Action): State {
-  switch (action.type) {
-    case "add":
-      return [...state, { id: Date.now(), text: action.payload }];
-    case "remove":
-      return state.filter((task) => task.id !== action.payload);
-    default:
-      throw new Error("Unknown action type");
-  }
-}
+```bash
+pipx install --include-deps ansible
+ansible-galaxy collection install community.docker community.general
 ```
 
----
+**2. Add your SSH key**
 
-### **Step 2: Creating the Task Manager Component**
-Inside `src/components/`, create `TaskManager.tsx`:
-```typescript
-import React, { useReducer, useState } from "react";
-import { taskReducer } from "../reducers/taskReducer";
-import { useTheme } from "../context/ThemeContext";
-import { LIGHT_THEME } from "../constants/theme";
-import styles from "./TaskManager.module.css";
+Copy the private key that matches the key pair in Terraform to `ansible/.ansible_key` and restrict it:
 
-const TaskManager = () => {
-  const [tasks, dispatch] = useReducer(taskReducer, []);
-  const [task, setTask] = useState("");
-  const { theme } = useTheme();
-
-  const addTask = () => {
-     dispatch({ type: "add", payload: task });
-     setTask("");
-  };
-
-  return (
-    <div className={`${styles.container} ${theme === LIGHT_THEME ? styles.light : styles.dark}`}>
-      <h2>Task Manager</h2>
-      <input value={task} onChange={(e) => setTask(e.target.value)} />
-      <button onClick={addTask} disabled={!task.trim()}>Add Task</button>
-      <ul>
-        {tasks.map((t) => (
-          <li key={t.id}>
-            {t.text} <button onClick={() => dispatch({ type: "remove", payload: t.id })}>X</button>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-};
-
-export default TaskManager;
+```bash
+cp ~/.ssh/<your-key> ansible/.ansible_key
+chmod 600 ansible/.ansible_key
 ```
 
-### **Step 3: Styling Task Manager (`TaskManager.module.css`)**
-```css
-.container {
-  padding: 20px;
-  border-radius: 8px;
-  max-width: 400px;
-  margin: auto;
-  text-align: center;
-  transition: background 0.3s, color 0.3s;
-}
+Never commit this file. Delete it when you are done:
 
-.light {
-  background-color: #ffffff;
-  color: #000000;
-}
-
-.dark {
-  background-color: #242629;
-  color: #ffffff;
-}
-
-button {
-  margin: 10px;
-}
+```bash
+rm -f ansible/.ansible_key
 ```
 
----
+**3. Check the inventory**
 
-### **Step 4: Importing Task Manager in `App.tsx`**
-Modify `App.tsx`: Below needs to be refined in the App.tsx, do not just copy and paste.
-```typescript
-import TaskManager from "./components/TaskManager";
-...
-<Navbar />
-<TaskManager />
-...
+`inventory.ini` holds the app VM private IP and the bastion public IP from the Terraform outputs (`app_private_ip`, `bastion_public_ip`). If you redeploy the infrastructure, the IPs change, so update both `inventory.ini` and the GitHub secrets. `inventory.ini.example` shows the format with placeholders.
+
+**4. Test the connection**
+
+```bash
+cd ansible
+ansible -i inventory.ini papertrail -m ping
 ```
-### Note: You need to import the context Provider and wrap it around your app
----
 
+You should see `"ping": "pong"`.
 
+**5. Put the variables in a file outside the repository**
+
+```yaml
+# ~/extra-vars.yml  (chmod 600, never commit)
+docker_image: "<registry>/papertrail:latest"
+ecr_url: "<registry>"
+database_url: "postgresql://<user>:<password>@<rds-endpoint>:5432/papertrail"
+aws_access_key_id: "<access key id>"
+aws_secret_access_key: "<secret access key>"
+```
+
+**6. Run**
+
+```bash
+ansible-playbook -i inventory.ini playbook.yml --syntax-check
+ansible-playbook -i inventory.ini playbook.yml -e @$HOME/extra-vars.yml
+```
+
+Run it a second time. The run should report almost no changes, which shows the playbook is idempotent.
+
+## Check that it worked
+
+The playbook ends with a health check task. You can also run the same check yourself. The app VM is private, so the request is made from the VM itself, through the bastion:
+
+```bash
+ansible -i inventory.ini papertrail -m uri -a "url=http://localhost:3000/health"
+```
+
+Expected response: `{"status":"ok","service":"papertrail"}`
+
+## Run it from CI
+
+The CD workflow (`.github/workflows/cd.yml`) runs this playbook on every merge to `main`, after the image is built, scanned and pushed to ECR. It reads these **GitHub Secrets**:
+
+| Secret | Used for |
+|---|---|
+| `ANSIBLE_SSH_PRIVATE_KEY` | SSH key for the bastion and the app VM |
+| `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION` | ECR login |
+| `ECR_REPOSITORY_URL` | Image name and registry |
+| `DATABASE_URL` | Database connection string |
+| `BASTION_IP`, `APP_VM_PRIVATE_IP` | Target addresses |
+
+## Security choices
+
+- **No secrets in git.** Keys, passwords and AWS credentials are passed at run time.
+- **`no_log: true`** on the ECR login and the compose template, so credentials never appear in logs.
+- **File mode `0600`** on the compose file on the server, because it contains `DATABASE_URL`.
+- **Bastion-only access.** The app VM has no public IP, and SSH goes through the bastion.
+- **Firewall and SSH hardening** in the `security` role: UFW default deny, root login off, password login off. Make sure your SSH key works before running the playbook, or you can lock yourself out.
+- **Fail-fast variable check** with `ansible.builtin.assert`, so a half-configured run cannot deploy.
+
+## Troubleshooting
+
+| Symptom | Likely cause |
+|---|---|
+| `Connection timed out` to the bastion | The bastion security group does not allow your IP (`allowed_ssh_cidr`), or the instance is stopped |
+| `Connection closed` during Gathering Facts | The SSH host-key prompt or the wrong key. The inventory already sets `StrictHostKeyChecking=no` and `IdentitiesOnly=yes` |
+| `ansible-playbook` exit code 4 | The host is unreachable (see the two rows above) |
+| `Log in to ECR` fails | Wrong or missing AWS credentials, no ECR permission, or the wrong `ecr_url`. Temporarily set `no_log: false` on that task to see the real error (never commit that change) |
+| `NoCredentials` from `aws sts get-caller-identity` on the VM | The VM has no IAM role, so the keys must be passed with `-e` |
+| `Pull the PaperTrail container image` fails with "not found" | The image is not in ECR yet. Run the CD pipeline once to push it |
+
+## Known limitations
+
+- Long-lived AWS keys are used for the ECR login. An IAM instance profile with ECR read access on the app VM would remove the need for stored keys.
+- SSH on the bastion must be reachable from the CI runners, whose IPs change. Restricting it to a fixed range needs a self-hosted runner.
